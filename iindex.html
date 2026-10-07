@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лера, ты выйдешь за меня?</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+  }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fbc2eb 100%);
+    background-size: 400% 400%;
+    animation: gradientBG 10s ease infinite;
+    overflow: hidden;
+    text-align: center;
+    padding: 20px;
+  }
+
+  @keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Плавающие сердечки на фоне */
+  .hearts {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+
+  .heart {
+    position: absolute;
+    bottom: -50px;
+    font-size: 24px;
+    opacity: 0.6;
+    animation: floatUp linear infinite;
+  }
+
+  @keyframes floatUp {
+    0% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 0;
+    }
+    10% { opacity: 0.7; }
+    100% {
+      transform: translateY(-110vh) rotate(360deg);
+      opacity: 0;
+    }
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    padding: 50px 40px;
+    border-radius: 30px;
+    box-shadow: 0 20px 60px rgba(255, 105, 180, 0.4);
+    max-width: 500px;
+    width: 100%;
+    animation: popIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0.7); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  h1 {
+    font-size: 32px;
+    color: #d63384;
+    margin-bottom: 15px;
+    line-height: 1.3;
+  }
+
+  .emoji {
+    font-size: 60px;
+    display: block;
+    margin-bottom: 15px;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+
+  .subtitle {
+    font-size: 16px;
+    color: #999;
+    margin-bottom: 35px;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  button {
+    border: none;
+    padding: 16px 45px;
+    font-size: 20px;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+  }
+
+  #yesBtn {
+    background: linear-gradient(135deg, #ff6b9d, #ee5a6f);
+    box-shadow: 0 10px 25px rgba(238, 90, 111, 0.5);
+  }
+
+  #yesBtn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 15px 35px rgba(238, 90, 111, 0.7);
+  }
+
+  #noBtn {
+    background: linear-gradient(135deg, #b0b0b0, #8a8a8a);
+    box-shadow: 0 10px 25px rgba(138, 138, 138, 0.4);
+  }
+
+  #noBtn:hover {
+    transform: translateY(-3px) scale(1.05);
+  }
+
+  /* Всплывающее окно "Ты уверена?" */
+  .confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .confirm-overlay.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .confirm-box {
+    background: white;
+    padding: 40px 50px;
+    border-radius: 25px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: shakeIn 0.5s ease;
+    text-align: center;
+    max-width: 90%;
+  }
+
+  @keyframes shakeIn {
+    0% { transform: scale(0.5) rotate(-5deg); opacity: 0; }
+    50% { transform: scale(1.05) rotate(3deg); }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+
+  .confirm-box p {
+    font-size: 28px;
+    color: #d63384;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .confirm-box span {
+    font-size: 50px;
+    display: block;
+  }
+
+  /* Экран с поздравлением */
+  .celebrate {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #ff6b9d, #ffa8c5, #ffd6e8);
+    background-size: 400% 400%;
+    animation: gradientBG 5s ease infinite;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .celebrate.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .celebrate h2 {
+    font-size: 52px;
+    color: white;
+    text-shadow: 0 5px 20px rgba(214, 51, 132, 0.6);
+    margin-bottom: 20px;
+    animation: bounceIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes bounceIn {
+    0% { transform: scale(0); }
+    60% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+
+  .celebrate p {
+    font-size: 22px;
+    color: white;
+    text-shadow: 0 3px 10px rgba(214, 51, 132, 0.5);
+    margin-bottom: 10px;
+    animation: fadeInUp 1s ease 0.4s both;
+  }
+
+  .celebrate .big-heart {
+    font-size: 90px;
+    animation: pulse 1s ease-in-out infinite;
+    margin-bottom: 20px;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Конфетти */
+  .confetti {
+    position: fixed;
+    top: -20px;
+    font-size: 22px;
+    z-index: 250;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+
+  @keyframes fall {
+    to {
+      transform: translateY(110vh) rotate(720deg);
+      opacity: 0;
+    }
+  }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 24px; }
+    .emoji { font-size: 45px; }
+    button { padding: 14px 32px; font-size: 17px; }
+    .celebrate h2 { font-size: 34px; }
+    .confirm-box p { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Фоновые сердечки -->
+  <div class="hearts" id="hearts"></div>
+
+  <!-- Основной блок с вопросом -->
+  <div class="container">
+    <span class="emoji">💍</span>
+    <h1>Лера, ты выйдешь за меня?</h1>
+    <p class="subtitle">Пожалуйста, подумай хорошенько... 💕</p>
+    <div class="buttons">
+      <button id="yesBtn">Да 💖</button>
+      <button id="noBtn">Нет</button>
+    </div>
+  </div>
+
+  <!-- Оверлей "Ты уверена?" -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <span>🥺</span>
+      <p>Ты уверена?</p>
+    </div>
+  </div>
+
+  <!-- Экран поздравления -->
+  <div class="celebrate" id="celebrate">
+    <span class="big-heart">❤️</span>
+    <h2>Ураааа!!! 🎉</h2>
+    <p>Я самый счастливый человек на свете!</p>
+    <p>Я тебя очень люблю 💕</p>
+  </div>
+
+<script>
+  // --- Фоновые сердечки ---
+  const heartsContainer = document.getElementById('hearts');
+  const heartEmojis = ['❤️', '💕', '💖', '💗', '💓', '🌸'];
+  function createHeart() {
+    const heart = document.createElement('div');
+    heart.className = 'heart';
+    heart.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+    heart.style.left = Math.random() * 100 + '%';
+    heart.style.fontSize = (14 + Math.random() * 22) + 'px';
+    const duration = 6 + Math.random() * 6;
+    heart.style.animationDuration = duration + 's';
+    heart.style.animationDelay = Math.random() * 2 + 's';
+    heartsContainer.appendChild(heart);
+    setTimeout(() => heart.remove(), (duration + 2) * 1000);
+  }
+  setInterval(createHeart, 400);
+
+  // --- Кнопки ---
+  const yesBtn = document.getElementById('yesBtn');
+  const noBtn = document.getElementById('noBtn');
+  const confirmOverlay = document.getElementById('confirmOverlay');
+  const celebrate = document.getElementById('celebrate');
+
+  // Кнопка "Нет" — показываем "Ты уверена?" на 3 секунды
+  noBtn.addEventListener('click', () => {
+    confirmOverlay.classList.add('show');
+    setTimeout(() => {
+      confirmOverlay.classList.remove('show');
+    }, 3000);
+  });
+
+  // Кнопка "Да" — показываем поздравление + конфетти
+  yesBtn.addEventListener('click', () => {
+    celebrate.classList.add('show');
+    launchConfetti();
+  });
+
+  // --- Конфетти ---
+  function launchConfetti() {
+    const emojis = ['🎉', '🎊', '💖', '💕', '❤️', '✨', '🌸', '💝'];
+    const total = 80;
+    for (let i = 0; i < total; i++) {
+      const conf = document.createElement('div');
+      conf.className = 'confetti';
+      conf.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      conf.style.left = Math.random() * 100 + '%';
+      conf.style.fontSize = (16 + Math.random() * 20) + 'px';
+      const duration = 3 + Math.random() * 3;
+      conf.style.animationDuration = duration + 's';
+      conf.style.animationDelay = Math.random() * 1.5 + 's';
+      document.body.appendChild(conf);
+      setTimeout(() => conf.remove(), (duration + 2) * 1000);
+    }
+  }
+</script>
+</body>
+</html>
